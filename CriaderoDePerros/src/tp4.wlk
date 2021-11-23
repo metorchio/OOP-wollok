@@ -28,8 +28,8 @@ class Criadero {
   }
   method perros() = perros
   method cruzar(estrategia) {
-  	const hembra = self.seleccionarHembraAdulta()
-  	const macho = self.seleccionarMachoAdulto()
+  	const hembra = self.seleccionarHembra()
+  	const macho = self.seleccionarMacho()
   	
   	const cria = estrategia.aplicar(macho, hembra)
     self.perros().add(cria)
@@ -38,19 +38,19 @@ class Criadero {
   method esHembraAdulta(animal) = animal.esHembra() && animal.adulto()
   method esMachoAdulto(animal) = !animal.esHembra() && animal.adulto()
 
-  method seleccionarHembraAdulta()
-  method seleccionarMachoAdulto()
+  method seleccionarHembra()
+  method seleccionarMacho()
   
 }
 
 class CriaderoResponsable inherits Criadero {
-  override method seleccionarHembraAdulta() = self.perros().filter{p => self.esHembraAdulta(p) }.max{ p => p.status() }
-  override method seleccionarMachoAdulto() = self.perros().filter{p => self.esMachoAdulto(p) }.max{ p => p.status() }
+  override method seleccionarHembra() = self.perros().filter{p => self.esHembraAdulta(p) }.max{ p => p.status() }
+  override method seleccionarMacho() = self.perros().filter{p => self.esMachoAdulto(p) }.max{ p => p.status() }
 }
 
 class CriaderoIrresponsable inherits Criadero {
-  override method seleccionarHembraAdulta() = self.perros().findOrElse( {p => self.esHembraAdulta(p)}, {throw new CriaderoSinHembrasException()} )
-  override method seleccionarMachoAdulto() = self.perros().findOrElse( {p => self.esMachoAdulto(p) }, {throw new CriaderoSinMachosException()} )
+  override method seleccionarHembra() = self.perros().findOrElse( {p => p.esHembra() }, {throw new CriaderoSinHembrasException()} )
+  override method seleccionarMacho() = self.perros().findOrElse( {p => !p.esHembra() }, {throw new CriaderoSinMachosException()} )
 
   override method cruzar(estrategia) {
       try {
