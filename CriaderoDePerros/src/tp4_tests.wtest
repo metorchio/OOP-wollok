@@ -1,0 +1,85 @@
+import tp4.*
+
+describe "Test" {
+	
+	test "La cruza underdog de perros adultos es exitosa" {
+		const hembraAdulta = new Perro(fuerza=3, velocidad=3, esHembra=true, adulto=true)
+		const machoAdulto = new Perro(fuerza=3, velocidad=3, esHembra=false, adulto=true)
+		
+		const ci = new CriaderoIrresponsable()
+		ci.recibirPerro(hembraAdulta)
+		ci.recibirPerro(machoAdulto)
+		
+		assert.that(ci.cruzar(underdog))
+	}
+
+	test "Un criadero irresponsable con 3 perros abandona a los 2 perros que no logra cruzar" {
+		const hembraAdulta = new Perro(fuerza=3, velocidad=3, esHembra=true, adulto=true)
+		const machoAdulto = new Perro(fuerza=3, velocidad=3, esHembra=false, adulto=true)
+		
+		const ci = new CriaderoIrresponsable()
+		ci.recibirPerro(hembraAdulta)
+		ci.recibirPerro(machoAdulto)
+		
+		const cantPerrosAntesDeCruzar = ci.perros().size()
+		try {			
+			ci.cruzar(hembraDominante)
+		} catch error : NoSePudoHacerLaCruzaException {
+			
+		}
+		const cantPerrosDespuesDeCruzar = ci.perros().size()
+		
+		assert.equals(cantPerrosAntesDeCruzar, 2)
+		assert.equals(cantPerrosDespuesDeCruzar, 0)
+	}
+	
+	test "Un criadero irresponsable cuando no logra cruzar 2 perros, sigue probando con otros" {
+		const hembraAdulta = new Perro(fuerza=3, velocidad=3, esHembra=true, adulto=true)
+		const machoAdulto = new Perro(fuerza=3, velocidad=3, esHembra=false, adulto=true)
+		const otraHembraAdulta = new Perro(fuerza=3, velocidad=3, esHembra=true, adulto=true)
+		const otroMachoAdulto = new Perro(fuerza=3, velocidad=3, esHembra=false, adulto=true)
+		
+		const ci = new CriaderoIrresponsable()
+		ci.recibirPerro(hembraAdulta)
+		ci.recibirPerro(machoAdulto)
+		ci.recibirPerro(otraHembraAdulta)
+		ci.recibirPerro(otroMachoAdulto)
+		
+		const cantPerrosAntesDeCruzar = ci.perros().size()
+		//assert.throwsException(ci.cruzar(hembraDominante))
+		try {			
+			ci.cruzar(hembraDominante)
+		} catch error : CriaderoFaltoDePerros {
+			//Catcheo la excepción porque sé que va a fallar.
+			console.println("El criadero se quedó sin perros:" + error)
+		}
+		const cantPerrosDespuesDeCruzar = ci.perros().size()
+		
+		assert.equals(cantPerrosAntesDeCruzar, 4)
+		assert.equals(cantPerrosDespuesDeCruzar, 0)
+	}
+	
+	test "El criadero responsable elige a los perros a cruzar en base a su status" {
+		const hembraAdulta = new Perro(fuerza=3, velocidad=3, esHembra=true, adulto=true)
+		const unaMejorHembraAdulta = new Perro(fuerza=13, velocidad=3, esHembra=true, adulto=true)
+		const machoAdulto = new Perro(fuerza=3, velocidad=3, esHembra=false, adulto=true)
+		
+		const cr = new CriaderoResponsable()
+		cr.recibirPerro(hembraAdulta)
+		cr.recibirPerro(machoAdulto)
+		cr.recibirPerro(unaMejorHembraAdulta)
+		
+		const cantPerrosAntesDeCruzar = cr.perros().size()
+		cr.cruzar(cruzaPareja)
+		const cantPerrosDespuesDeCruzar = cr.perros().size()
+		const grupoDePerrosIniciales = [hembraAdulta, machoAdulto, unaMejorHembraAdulta]
+		const cria = cr.perros().find{ perro => !grupoDePerrosIniciales.contains(perro) }
+		
+		assert.equals(cria.adulto(), false)
+		assert.equals(cria.fuerza(), 8)
+		assert.notEquals(cria.fuerza(), 3)
+		assert.equals(cantPerrosAntesDeCruzar, 3)
+		assert.equals(cantPerrosDespuesDeCruzar, 4)
+		//assert.equals(actual, expected)
+	}
+}
