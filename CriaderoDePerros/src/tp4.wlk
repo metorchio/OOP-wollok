@@ -90,8 +90,8 @@ class EstrategiaDeCruza {
     const hembra = self.reconocerHembra(unPerro, otroPerro)
     const macho = self.reconocerMacho(unPerro, otroPerro)
     return self.tenerCria(
-        self.calcularVelocidadDeLaCria(macho, hembra), 
-        self.calcularFuerzaDeLaCria(macho, hembra)
+        self.calcularFuerzaDeLaCria(macho, hembra),
+        self.calcularVelocidadDeLaCria(macho, hembra)
     )
   } 
   

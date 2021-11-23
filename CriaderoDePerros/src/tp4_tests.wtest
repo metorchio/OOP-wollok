@@ -2,17 +2,6 @@ import tp4.*
 
 describe "Test" {
 	
-	test "La cruza underdog de perros adultos es exitosa" {
-		const hembraAdulta = new Perro(fuerza=3, velocidad=3, esHembra=true, adulto=true)
-		const machoAdulto = new Perro(fuerza=3, velocidad=3, esHembra=false, adulto=true)
-		
-		const ci = new CriaderoIrresponsable()
-		ci.recibirPerro(hembraAdulta)
-		ci.recibirPerro(machoAdulto)
-		
-		assert.that(ci.cruzar(underdog))
-	}
-
 	test "Un criadero irresponsable con 3 perros abandona a los 2 perros que no logra cruzar" {
 		const hembraAdulta = new Perro(fuerza=3, velocidad=3, esHembra=true, adulto=true)
 		const machoAdulto = new Perro(fuerza=3, velocidad=3, esHembra=false, adulto=true)
@@ -80,6 +69,40 @@ describe "Test" {
 		assert.notEquals(cria.fuerza(), 3)
 		assert.equals(cantPerrosAntesDeCruzar, 3)
 		assert.equals(cantPerrosDespuesDeCruzar, 4)
-		//assert.equals(actual, expected)
+	}
+	
+	test "La cruza pareja de perros adultos con hembra débil es exitosa" {
+		const hembraAdultaDebil = new Perro(fuerza=1, velocidad=3, esHembra=true, adulto=true)
+		const machoAdulto = new Perro(fuerza=3, velocidad=5, esHembra=false, adulto=true)
+		
+		const ci = new CriaderoIrresponsable()
+		ci.recibirPerro(hembraAdultaDebil)
+		ci.recibirPerro(machoAdulto)
+		
+		ci.cruzar(cruzaPareja)
+		
+		const grupoDePerrosIniciales = [hembraAdultaDebil, machoAdulto]
+		const cria = ci.perros().find{ perro => !grupoDePerrosIniciales.contains(perro) }
+		assert.equals(cria.adulto(), false)
+		assert.equals(cria.fuerza(), 2)
+		assert.equals(cria.velocidad(), 4)		
+	}
+	
+	test "La cruza underdog de perros adultos es exitosa" {
+		const hembraAdulta = new Perro(fuerza=1, velocidad=3, esHembra=true, adulto=true)
+		const machoAdulto = new Perro(fuerza=3, velocidad=5, esHembra=false, adulto=true)
+		
+		const ci = new CriaderoIrresponsable()
+		ci.recibirPerro(hembraAdulta)
+		ci.recibirPerro(machoAdulto)
+		
+		ci.cruzar(underdog)
+
+		const grupoDePerrosIniciales = [hembraAdulta, machoAdulto]
+		const cria = ci.perros().find{ perro => !grupoDePerrosIniciales.contains(perro) }
+		assert.equals(cria.adulto(), false)
+		assert.equals(cria.fuerza(), 2)
+		assert.equals(cria.velocidad(), 6)		
+
 	}
 }
