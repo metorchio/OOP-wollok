@@ -3,27 +3,24 @@ class EmpleadoNoTienenHabilidadesRequeridasException inherits DomainException {}
 class EmpleadoMuertoException inherits DomainException {}
 
 class Empleado {
-	var property salud
+	var property salud = 100
 	var property puesto
 	const property habilidades = #{}
 	method estaIncapacitado() = salud < puesto.saludCritica()
 	method puedeUsarHabilidad(habilidad) {
-		return not puesto.estaIncapacitado(salud) 
+		return not self.estaIncapacitado() 
 				&& habilidades.contains(habilidad)
 	}
 	method aprenderHabilidad(habilidad) = habilidades.add(habilidad)
 	
 	method chequearHabilidadesRequeridas(mision) {
-		const cumpleConLasHabilidadesRequetidas = mision.habilidadesRequeridas()
+		const cumpleConLasHabilidadesRequeridas = mision.habilidadesRequeridas()
 				.all{ habilidadRequerida => self.puedeUsarHabilidad(habilidadRequerida) }
-		if( !cumpleConLasHabilidadesRequetidas ) throw new EmpleadoNoTienenHabilidadesRequeridasException() 
+		if( !cumpleConLasHabilidadesRequeridas ) throw new EmpleadoNoTienenHabilidadesRequeridasException() 
 	}
 	method recibirDanio(danio){ 
-		if( danio < salud ) {
-			salud = (salud - danio)
-		} else {
-			throw new EmpleadoMuertoException()
-		}
+		salud -= danio
+		if( salud <= 0 ) throw new EmpleadoMuertoException()
 	}
 		
 	method cumplirMision(mision) {
@@ -32,6 +29,7 @@ class Empleado {
 		puesto.misionCompletada(mision, self)
 	}
 	
+	method completarMision(mision){ puesto.misionCompletada(mision, self) }
 }
 
 
@@ -68,10 +66,10 @@ class Equipo {
 	const property integrantes = #{}
 	method agregarIntegrante(empleado) = integrantes.add(empleado)
 	method chequearHabilidadesRequeridas(mision) {
-		mision.habilidadesRequeridas().all{ habilidadRequerida => 
-			integrantes.findOrElse({ integrante => integrante.puedeUsarHabilidad(habilidadRequerida) },
-				throw new NingunIntegranteCuentaConLaHabilidadRequeridaException()
-			)}
+		const alguienCumpleConLasHabilidadesRequeridas = 
+			mision.habilidadesRequeridas().all{ habilidadRequerida => 
+					integrantes.any{ integrante => integrante.puedeUsarHabilidad(habilidadRequerida) }}
+		if( !alguienCumpleConLasHabilidadesRequeridas ) throw new NingunIntegranteCuentaConLaHabilidadRequeridaException()
 	} 
 	method recibirDanio(danio){
 	 	integrantes.forEach{ empleado => empleado.recibirDanio(danio/3) }
@@ -79,12 +77,6 @@ class Equipo {
 	method completarMision(mision){
 		integrantes.forEach{empleado => empleado.completarMision(mision) }
 	}		
-	
-	method cumplirMision(mision) {
-		self.chequearHabilidadesRequeridas(mision)
-		self.recibirDanio(mision.peligrosidad())
-		self.completarMision(mision)
-	}
 }
 
 class Mision {
@@ -92,8 +84,8 @@ class Mision {
 	const property habilidadesRequeridas = #{}
 	const property peligrosidad
 	method habilidadesRequeridas(habilidades) = habilidadesRequeridas.addAll(habilidades)
-	method realizarMision(aCargo) {
-		aCargo.cumplirMision()
+	method cumplirMision(aCargo) {
+		aCargo.chequearHabilidadesRequeridas(self)
 		aCargo.recibirDanio(peligrosidad)
 		aCargo.completarMision(self)
 	}

@@ -1,0 +1,60 @@
+import solucion.*
+
+describe "Test" {
+	
+	test "Un equipo completa una mision" {
+		const habilidad1 = "disparar"
+		const habilidad2 = "hacer el papeleo"
+		
+		const unEspia = new Empleado(puesto=espia)
+		unEspia.aprenderHabilidad(habilidad1)
+		const unOficinista = new Empleado(puesto=new Oficinista())
+		unOficinista.aprenderHabilidad(habilidad2)
+		const unJefe = new Jefe(puesto=espia)
+		
+		const unEquipo = new Equipo()
+		unEquipo.agregarIntegrante(unEspia)
+		unEquipo.agregarIntegrante(unOficinista)
+		unEquipo.agregarIntegrante(unJefe)
+		
+		const unaMision = new Mision(nombreSecreto="Separar la ropa por colores", peligrosidad=60)
+		unaMision.habilidadesRequeridas([habilidad1, habilidad2])
+				
+		unaMision.cumplirMision(unEquipo)
+		assert.equals(unEspia.salud(), 80)
+		assert.equals(unOficinista.salud(), 80)
+		assert.equals(unJefe.salud(), 80)
+		assert.equals(unEspia.habilidades(), #{habilidad1, habilidad2})
+		assert.equals(unOficinista.puesto().estrellasGanadas(), 1)
+	}
+	
+	test "Un empleado completa una mision" {
+		const habilidad1 = "disparar"
+		const habilidad2 = "hacer el papeleo"
+		
+		const unEspia = new Empleado(puesto=espia)
+		unEspia.aprenderHabilidad(habilidad1)
+		unEspia.aprenderHabilidad(habilidad2)
+				
+		const unaMision = new Mision(nombreSecreto="Separar la ropa por colores", peligrosidad=10)
+		unaMision.habilidadesRequeridas([habilidad1, habilidad2])
+				
+		unaMision.cumplirMision(unEspia)
+		assert.equals(unEspia.salud(), 90)
+	}
+	
+	test "Un espia muere realizando una mision" {
+		const habilidad1 = "disparar"
+		const habilidad2 = "hacer el papeleo"
+		
+		const unEspia = new Empleado(puesto=espia)
+		unEspia.aprenderHabilidad(habilidad1)
+		unEspia.aprenderHabilidad(habilidad2)
+				
+		const unaMision = new Mision(nombreSecreto="Separar la ropa por colores", peligrosidad=1000)
+		unaMision.habilidadesRequeridas([habilidad1, habilidad2])
+				
+		assert.throwsExceptionLike(new EmpleadoMuertoException(),
+			{unaMision.cumplirMision(unEspia)})
+	}
+}
