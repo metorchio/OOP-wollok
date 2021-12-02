@@ -23,15 +23,16 @@ class Capital {
 class Expedicion {
 	const property lugaresInvolucrados = []
 	const property vikingosInvolucrados = []
-	method valeLaPena() = lugaresInvolucrados.all{ lugar => lugar.valeLaPenaInvadir(vikingosInvolucrados.size()) }
+	method cantidadDeIntegrantes() = vikingosInvolucrados.size()
+	method valeLaPena() = lugaresInvolucrados.all{ lugar => lugar.valeLaPenaInvadir(self.cantidadDeIntegrantes()) }
 	method subirVikingo(vikingo) {
-		if( ! vikingo.tienePermitidoIrAUnaExpedicion() ) throw new VikingoNoTienePermitidoIrAExpedicionException()
+		if( not vikingo.tienePermitidoIrAUnaExpedicion() ) throw new VikingoNoTienePermitidoIrAExpedicionException()
 		vikingosInvolucrados.add(vikingo)
 	}
 	method llevarACabo() {
-		if( ! self.valeLaPena() ) throw new ExpedicionNoValeLaPenaException()
-		const botinDeExpedicion = lugaresInvolucrados.forEach{ lugar => lugar.botin(vikingosInvolucrados.size()) }.sum()
-		const botinParaCadaVikingo = botinDeExpedicion / vikingosInvolucrados.size() 
+		if( not self.valeLaPena() ) throw new ExpedicionNoValeLaPenaException()
+		const botinDeExpedicion = lugaresInvolucrados.forEach{ lugar => lugar.botin(self.cantidadDeIntegrantes()) }.sum()
+		const botinParaCadaVikingo = botinDeExpedicion / self.cantidadDeIntegrantes()
 		vikingosInvolucrados.forEach{ vikingo => vikingo.recibirBotin(botinParaCadaVikingo) }
 	}
 }
@@ -46,26 +47,28 @@ class Vikingo {
 	method ascenderSocialmente(){ rango.ascender(self) }
 }
 
+class Casta {
+	method tienePermitidoIrAUnaExpedicion(trabajo) = true
+}
+
 //esclavos
-class Jarl {
-	method tienePermitidoIrAUnaExpedicion(trabajo) = trabajo.tieneArmas()
+object jarl inherits Casta {
+	override method tienePermitidoIrAUnaExpedicion(trabajo) = trabajo.tieneArmas()
 	method ascender(vikingo) {
-		vikingo.rango( new Karl() )
+		vikingo.rango( karl )
 		vikingo.trabajo().gananciasPorAscendo()
 	}  
 }
 
 //casta media
-class Karl {
-	method tienePermitidoIrAUnaExpedicion(trabajo) = true
+object karl inherits Casta {
 	method ascender(vikingo) {
-		vikingo.rango( new Thrall() )
+		vikingo.rango( thrall)
 	}   
 }
 
 //nobles
-class Thrall {
-	method tienePermitidoIrAUnaExpedicion(trabajo) = true
+object thrall inherits Casta {
 	method ascender(vikingo){ throw new RangoMaximoAlcanzadoException() }   
 }
 
