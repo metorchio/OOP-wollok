@@ -40,23 +40,18 @@ class Invernadero inherits Terreno {
 	
 	override method esRico() =
 		cultivos.size() < (maximoPlantasXM2/2) 
-		|| dispositivoElectronico.esReguladorNutricional()
-		|| ( dispositivoElectronico.esHumidificador() && dispositivoElectronico.humedadConfigurada().beetween(20,40) )
+		|| dispositivoElectronico.enriqueceTerreno()
 	
 }
 
-class ReguladorNutricional {
-	method esReguladorNutricional() = true
-	method esHumidificador() = false
-	method esPanelSolar() = false
+object reguladorNutricional {
+	method enriqueceTerreno() = true  
 	method costoMantenimiento() = 2000
 }
 
 class Humidificador {
 	var property humedadConfigurada
-	method esReguladorNutricional() = false
-	method esHumidificador() = true
-	method esPanelSolar() = false
+	method enriqueceTerreno() = humedadConfigurada.beetween(20,40)
 	method configurarPorcentajeHumedad(humedad){ humedadConfigurada = humedad }
 	method costoMantenimiento() {
 		if( humedadConfigurada <= 30 ) {
@@ -67,13 +62,10 @@ class Humidificador {
 	}
 }
 
-class PanelesSolares {
-	method esReguladorNutricional() = false
-	method esHumidificador() = false
-	method esPanelSolar() = true
+object panelesSolares {
+	method enriqueceTerreno() = false  
 	method costoMantenimiento() = -25000
 }
-
 
 object cultivoPapa {
 	const property valNutricional = 1500
@@ -92,21 +84,24 @@ object cultivoAlgodon {
 
 class CultivoArbolFrutal {
 	var property diaQueSePlanto
+	var property fruta
 	method edad() {
 		var hoy = new Date()
 		return hoy - diaQueSePlanto
 	}
 	method puedePlantarse(terreno) = terreno.esCampoAbierto()
-	method valorNutricional(terreno) = 4000.max( self.edad() * 3 )
-	method cantidadDeFrutaDada() = 0 //De donde sale este dato????
-	method precioDeVenta(terreno) = self.cantidadDeFrutaDada()	
+	method valorNutricional(terreno) = 4000.min( self.edad() * 3 )
+	method precioDeVenta(terreno) = fruta.cantidad() * fruta.precio()
 }
 
 class CultivoPalmeraTropical inherits CultivoArbolFrutal {
 	override method puedePlantarse(terreno) = super(terreno) && terreno.esRico()
 	override method precioDeVenta(terreno) = super(terreno) * 5
-	override method valorNutricional(terreno) = 7500.max( self.edad() * 2 )
+	override method valorNutricional(terreno) = 7500.min( self.edad() * 2 )
 }
 
-
+class Fruta {
+	const property cantidad
+	const property precio
+}
 
