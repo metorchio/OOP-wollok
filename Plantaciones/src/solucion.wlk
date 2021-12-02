@@ -3,40 +3,41 @@ class TerrenoAlcanzoLimiteDeCultivosException inherits DomainException {}
 
 class Terreno {
 	const property cultivos = []
-	const property parcelasDeTierraEnM2
-	const property riquezaDelSuelo
-	
-	method costoMantenimientoXM2()
-	method maximoPlantasXM2()
+
+	method costoMantenimiento()
+	method maximoPlantas()
 	
 	method esRico()
 	method esCampoAbierto()
+	method permitePlantarArboles()
 	
 	method mediaNutricional() = cultivos.map{ cultivo => cultivo.valorNutricional(self) }.sum() / cultivos.size()
-	method valorNeto() = cultivos.map{ cultivo => cultivo.precioDeVenta(self) }.sum() - self.costoMantenimientoXM2()
+	method valorNeto() = cultivos.map{ cultivo => cultivo.precioDeVenta(self) }.sum() - self.costoMantenimiento()
 	method plantarCultivo(cultivo) {
 		if( ! cultivo.puedePlantarse(self) ) throw new TerrenoNoSoportadoPorCultivoException()
-		if( ! (cultivos.size() < self.maximoPlantasXM2()) ) throw new TerrenoAlcanzoLimiteDeCultivosException()
+		if( ! (cultivos.size() < self.maximoPlantas()) ) throw new TerrenoAlcanzoLimiteDeCultivosException()
 		cultivos.add(cultivo)
 	}
 }
 
 class CampoAbierto inherits Terreno {
+	const property parcelasDeTierraEnM2
+	const property riquezaDelSuelo
 	
-	override method esCampoAbierto() = true
+	override method permitePlantarArboles() = true
 	override method esRico() = riquezaDelSuelo > 100
-	override method costoMantenimientoXM2() = 500
-	override method maximoPlantasXM2() = 4
+	override method costoMantenimiento() = 500 * parcelasDeTierraEnM2
+	override method maximoPlantas() = 4 * parcelasDeTierraEnM2
 }
 
 class Invernadero inherits Terreno {
 	const property maximoPlantasXM2
 	var property dispositivoElectronico
-	override method esCampoAbierto() = false
+	override method permitePlantarArboles() = false
 	
 	method instalarDispositivoElectronico(dispositivo){ dispositivoElectronico = dispositivo }
-	override method maximoPlantasXM2() = maximoPlantasXM2
-	override method costoMantenimientoXM2() = 50000 + dispositivoElectronico.costoMantenimiento()
+	override method maximoPlantas() = maximoPlantasXM2
+	override method costoMantenimiento() = 50000 + dispositivoElectronico.costoMantenimiento()
 	
 	override method esRico() =
 		cultivos.size() < (maximoPlantasXM2/2) 
@@ -89,7 +90,7 @@ class CultivoArbolFrutal {
 		var hoy = new Date()
 		return hoy - diaQueSePlanto
 	}
-	method puedePlantarse(terreno) = terreno.esCampoAbierto()
+	method puedePlantarse(terreno) = terreno.permitePlantarArboles()
 	method valorNutricional(terreno) = 4000.min( self.edad() * 3 )
 	method precioDeVenta(terreno) = fruta.cantidad() * fruta.precio()
 }
